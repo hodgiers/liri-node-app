@@ -7,8 +7,9 @@
 //var dataKeys = require("keys.js");
 
 var twitter = require('twitter');
-var twitterKeys = require('./keys.js');
-//var spotify = require('spotify');
+var twitterKeys = require('./twitterkeys.js');
+var spotifyKeys = require('./spotifykeys.js');
+var spotify = require('spotify-web-api-node');
 //var request = require('request');
 var inquirer = require("inquirer");
 var choiceArray = ["Display Tweets", 'Display Spotify', 'Display Movie'];
@@ -40,6 +41,7 @@ var questions = [
           twitterCall();
         } else if (answers.userSelection == choiceArray[1]) {
           console.log("Run Display Spotify");
+          spotifyCall();
         } else if (answers.userSelection == choiceArray[2]) {
           console.log("Run Display Movies");
         } else {
@@ -61,13 +63,13 @@ var twitterQuestion = [
   {
     type: 'input',
     name: 'twitterHandleInput',
-    message: "input the Twitter Handle of the user's tweets to display"
+    message: "Input the Twitter Handle of the user's tweets to display"
   }
 ]
 
 function displayTweets() {
   inquirer.prompt(twitterQuestion).then(function(answers) {
-    var client = new twitter({
+    var twitterClient = new twitter( {
         consumer_key: twitterKeys.consumer_key,
         consumer_secret: twitterKeys.consumer_secret,
         access_token_key: twitterKeys.access_token_key,
@@ -75,7 +77,8 @@ function displayTweets() {
       })
     var twitterHandle = answers.twitterHandleInput;
     params = {screen_name: twitterHandle};
-    client.get('statuses/user_timeline/', params, function(error, data, response) {
+    twitterClient.get('statuses/user_timeline/', params, function(error, data, response) {
+
       if (!error) {
         for(var i = 0; i < data.length; i++) {
           var twitterResults =
@@ -84,7 +87,7 @@ function displayTweets() {
 					data[i].created_at + "\r\n" +
 					"------------------------------ " + i + " ------------------------------" + "\r\n";
 					console.log(twitterResults);
-					//log(twitterResults); // calling log function
+          console.log(params);
         }
       } else {
         console.log("Error :" + error);
@@ -97,9 +100,112 @@ function displayTweets() {
   displayTweets()
 };
 
+
+
+
+
 //Spotify function: Displays artist, song, album  and a preview link
 
+function spotifyCall() {
 
+var spotifyQuestion = [
+  {
+    type: 'input',
+    name: 'spotifyInput',
+    message: "Input the Spotify song you'd like information on."
+  }
+]
+
+function displaySpotify() {
+
+  inquirer.prompt(spotifyQuestion).then(function(answers) {
+
+    var spotifyApi = new spotify( {
+      clientId: spotifyKeys.client_id,
+      clientSecret: spotifyKeys.client_secret,
+    })
+
+    // Retrieve an access token.
+    spotifyApi.clientCredentialsGrant().then(function(data) {
+      console.log('The access token expires in ' + data.body['expires_in']);
+      console.log('The access token is ' + data.body['access_token']);
+      console.log(params)
+      // Save the access token so that it's used in future calls
+      spotifyApi.setAccessToken(data.body['access_token']);
+    }, function(err) {
+      console.log(spotifyApi);
+        console.log('Something went wrong when retrieving an access token', err);
+      });
+
+    var spotifySong = answers.spotifyInput;
+    params = spotifySong;
+    console.log(params);
+
+
+    spotifyApi.searchTracks(params).then(function(data) {
+      console.log('Results for tracks titled ' + params, data.body);
+    }, function(err) {
+      console.log(err);
+    })
+
+
+  })
+}
+displaySpotify()
+};
+
+
+
+
+    /*
+
+    spotify.search({ type: "track", query: params }, function(err, data) {
+
+      if (err) {
+        console.log('Error occurred: ' + err);
+        return;
+
+        //set up base path for finding information through Spotify API
+      } else {
+        console.log(data);
+      }
+})
+    */
+
+
+
+
+      /*
+      if (!error) {
+        var songInfo = data.tracks.items;
+        for(var i = 0; i < 6; i++) {
+          if (songInfo[i] != undefined) {
+            var spotifyResults =
+						"Artist: " + songInfo[i].artists[0].name + "\r\n" +
+						"Song: " + songInfo[i].name + "\r\n" +
+						"Album the song is from: " + songInfo[i].album.name + "\r\n" +
+						"Preview Url: " + songInfo[i].preview_url + "\r\n" +
+						"------------------------------ " + i + " ------------------------------" + "\r\n";
+						console.log(spotifyResults);
+						log(spotifyResults); // calling log function
+
+
+     } else {
+       console.log("Error :" + err);
+       return;
+     }
+   }
+ }      */
+
+
+
+
+
+
+//}
+
+
+//};
 
 //OMDB Function: displays Movie Title, Release year, rating, plot,
 //rotten tomato score, origin country, language, actors
