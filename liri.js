@@ -100,10 +100,6 @@ function displayTweets() {
   displayTweets()
 };
 
-
-
-
-
 //Spotify function: Displays artist, song, album  and a preview link
 
 function spotifyCall() {
@@ -129,50 +125,30 @@ function displaySpotify() {
     spotifyApi.clientCredentialsGrant().then(function(data) {
       console.log('The access token expires in ' + data.body['expires_in']);
       console.log('The access token is ' + data.body['access_token']);
-      console.log(params)
+      //console.log(params)
       // Save the access token so that it's used in future calls
       spotifyApi.setAccessToken(data.body['access_token']);
+
+      var spotifySong = answers.spotifyInput;
+      params = spotifySong;
+      console.log(params);
+
+      spotifyApi.searchTracks(params).then(function(data) {
+        console.log('Results for tracks titled ' + params,(JSON.stringify(data.body, null, 2)));
+      }, function(err) {
+        console.log(err);
+      })
+
+
     }, function(err) {
       console.log(spotifyApi);
         console.log('Something went wrong when retrieving an access token', err);
       });
-
-    var spotifySong = answers.spotifyInput;
-    params = spotifySong;
-    console.log(params);
-
-
-    spotifyApi.searchTracks(params).then(function(data) {
-      console.log('Results for tracks titled ' + params, data.body);
-    }, function(err) {
-      console.log(err);
     })
+  }
 
-
-  })
-}
 displaySpotify()
 };
-
-
-
-
-    /*
-
-    spotify.search({ type: "track", query: params }, function(err, data) {
-
-      if (err) {
-        console.log('Error occurred: ' + err);
-        return;
-
-        //set up base path for finding information through Spotify API
-      } else {
-        console.log(data);
-      }
-})
-    */
-
-
 
 
       /*
